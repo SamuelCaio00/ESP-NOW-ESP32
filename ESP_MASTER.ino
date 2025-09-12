@@ -12,12 +12,13 @@ typedef struct struct_message {
 struct_message myData;
 bool lastState = HIGH;
 
-void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status) {
-  Serial.print("Envio para MAC ");
+void OnDataSent(const wifi_tx_info_t *info, esp_now_send_status_t status) {
+  Serial.print("Envio para MAC: ");
   char macStr[18];
-  snprintf(macStr, sizeof(macStr), "%02X:%02X:%02X:%02X:%02X:%02X",
-           mac_addr[0], mac_addr[1], mac_addr[2],
-           mac_addr[3], mac_addr[4], mac_addr[5]);
+  snprintf(macStr, sizeof(macStr),
+           "%02X:%02X:%02X:%02X:%02X:%02X",
+           info->des_addr[0], info->des_addr[1], info->des_addr[2],
+           info->des_addr[3], info->des_addr[4], info->des_addr[5]);
   Serial.print(macStr);
   Serial.print(" - Status: ");
   if (status == ESP_NOW_SEND_SUCCESS) {
@@ -26,6 +27,7 @@ void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status) {
     Serial.println("FALHA");
   }
 }
+
 
 void setup() {
   Serial.begin(115200);
