@@ -10,6 +10,8 @@ struct_message incomingData;
 
 void OnDataRecv(const esp_now_recv_info *info, const uint8_t *incomingDataBytes, int len) {
   memcpy(&incomingData, incomingDataBytes, sizeof(incomingData));
+  Serial.print("Mensagem recebida. LED = ");
+  Serial.print(incomingData.ledState);
 
   char macStr[18];
   snprintf(macStr, sizeof(macStr),
