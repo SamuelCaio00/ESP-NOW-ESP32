@@ -3,7 +3,7 @@
 #include <esp_wifi.h>
 #define LED_BUILTIN 2
 
-uint8_t broadcastAddress[] = {0xB0, 0xA7, 0x32, 0x17, 0x9C, 0xA0};// substitua pelo MAC do seu esp32
+uint8_t broadcastAddress[] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00}; // Substitua pelo MAC do ESP32 receptor
 
 typedef struct struct_message {
   int ledState;
@@ -12,6 +12,7 @@ typedef struct struct_message {
 struct_message myData;
 bool lastState = HIGH;
 
+// Callback de envio
 void OnDataSent(const wifi_tx_info_t *info, esp_now_send_status_t status) {
   Serial.print("Envio para MAC: ");
   char macStr[18];
@@ -22,35 +23,34 @@ void OnDataSent(const wifi_tx_info_t *info, esp_now_send_status_t status) {
   Serial.print(macStr);
   Serial.print(" - Status: ");
   if (status == ESP_NOW_SEND_SUCCESS) {
-    Serial.println("SUCESSO");
+    Serial.println("Sucesso");
   } else {
-    Serial.println("FALHA");
+    Serial.println("Falha");
   }
 }
 
-
 void setup() {
   Serial.begin(115200);
-  pinMode(4, INPUT_PULLUP);
+  pinMode(4, INPUT_PULLUP);  // GPIO conectado ao botão
   pinMode(LED_BUILTIN, OUTPUT);
+
   WiFi.mode(WIFI_STA);
   WiFi.disconnect();
-  esp_wifi_set_channel(1, WIFI_SECOND_CHAN_NONE); // Defina o canal desejado
+  esp_wifi_set_channel(1, WIFI_SECOND_CHAN_NONE); // Canal definido
 
   if (esp_now_init() != ESP_OK) {
     Serial.println("Erro ao iniciar ESP-NOW");
     return;
-    
   }
 
   esp_now_register_send_cb(OnDataSent);
 
   esp_now_peer_info_t peerInfo = {};
   memcpy(peerInfo.peer_addr, broadcastAddress, 6);
-  peerInfo.channel = 1; // Mesmo canal dos dois ESP32
+  peerInfo.channel = 1;
   peerInfo.encrypt = false;
   peerInfo.ifidx = WIFI_IF_STA;
-  digitalWrite(2, HIGH);
+
   if (esp_now_add_peer(&peerInfo) != ESP_OK) {
     Serial.println("Erro ao adicionar peer");
     piscar();
@@ -78,21 +78,13 @@ void loop() {
   }
 
   lastState = currentState;
-} 
+}
 
-void piscar (){
-  
-  digitalWrite(LED_BUILTIN, HIGH);
-  delay(250);
-  digitalWrite(LED_BUILTIN, LOW);
-  delay(250);
-  digitalWrite(LED_BUILTIN, HIGH);
-  delay(250);
-  digitalWrite(LED_BUILTIN, LOW);
-  delay(250);
-  digitalWrite(LED_BUILTIN, HIGH);
-  delay(250);
-  digitalWrite(LED_BUILTIN, LOW);
-  delay(250);
-  digitalWrite(LED_BUILTIN, HIGH);
+void piscar() {
+  for (int i = 0; i < 3; i++) {
+    digitalWrite(LED_BUILTIN, HIGH);
+    delay(250);
+    digitalWrite(LED_BUILTIN, LOW);
+    delay(250);
   }
+}
